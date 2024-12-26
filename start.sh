@@ -29,14 +29,17 @@ fi
 
 echo -e "${Text} ${BLUE}Setting txAdmin credentials...${NC}"
 if [[ "${TXADMIN_ENABLE}" == "1" ]]; then
-    if [[ -n "${TXADMIN_USER}" && -n "${TXADMIN_PASSWORD}" ]]; then
-        echo -e "${Text} ${BLUE}Applying txAdmin credentials.${NC}"
-        echo "{\"username\": \"${TXADMIN_USER}\", \"password\": \"${TXADMIN_PASSWORD}\"}" > txAdmin.json
-    else
-        echo -e "${Text} ${RED}Warning: txAdmin username or password is not set. Using defaults!${NC}"
-    fi
+if [ -z "$TXADMIN_USER" ]; then
+    echo -e "${Text} ${RED}txAdmin username is not set! Please set TXADMIN_USER in Pterodactyl settings.${NC}"
+    exit 1
 fi
 
-echo -e "${Text} ${BLUE}Starting FiveM Server...${NC}"
+if [ -z "$TXADMIN_PASSWORD" ]; then
+    echo -e "${Text} ${RED}txAdmin password is not set! Please set TXADMIN_PASSWORD in Pterodactyl settings.${NC}"
+    exit 1
+fi
 
-$(pwd)/alpine/opt/cfx-server/ld-musl-x86_64.so.1 --library-path "$(pwd)/alpine/usr/lib/v8/:$(pwd)/alpine/lib/:$(pwd)/alpine/usr/lib/" -- $(pwd)/alpine/opt/cfx-server/FXServer +set citizen_dir $(pwd)/alpine/opt/cfx-server/citizen/ +set sv_licenseKey ${FIVEM_LICENSE} +set steam_webApiKey ${STEAM_WEBAPIKEY} +set sv_maxplayers ${MAX_PLAYERS} +set serverProfile default +set txAdminPort ${TXADMIN_PORT} $( [ "$TXADMIN_ENABLE" == "1" ] || printf %s '+exec server.cfg' )
+echo -e "${Text} ${BLUE}Starting FiveM Server with custom txAdmin username and password...${NC}"
+
+# Start the server with the specified txAdmin credentials
+$(pwd)/alpine/opt/cfx-server/ld-musl-x86_64.so.1 --library-path "$(pwd)/alpine/usr/lib/v8/:$(pwd)/alpine/lib/:$(pwd)/alpine/usr/lib/" -- $(pwd)/alpine/opt/cfx-server/FXServer +set citizen_dir $(pwd)/alpine/opt/cfx-server/citizen/ +set sv_licenseKey ${FIVEM_LICENSE} +set steam_webApiKey ${STEAM_WEBAPIKEY} +set sv_maxplayers ${MAX_PLAYERS} +set serverProfile default +set txAdminPort ${TXADMIN_PORT} +set txAdminUser ${TXADMIN_USER} +set txAdminPassword ${TXADMIN_PASSWORD} $( [ "$TXADMIN_ENABLE" == "1" ] || printf %s '+exec server.cfg' )
